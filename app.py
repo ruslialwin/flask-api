@@ -80,6 +80,10 @@ def get_data_akun_analitik(company):
     # Bulatkan nilai 2 angka di belakang koma
     df["Nominal"] = df["Nominal"].round(2)
 
+     # format tanggal
+    df["Tanggal"] = pd.to_datetime(df["Tanggal"])
+    df["Tanggal"] = df["Tanggal"].dt.strftime("%d/%m/%Y")
+
     # Susun kolom akhir
     final_cols = [
         "Tanggal", "Tahun", "Bulan", "Overview", "Deskripsi", "No Akun", "Nama Akun", "No Akun Analitik",
