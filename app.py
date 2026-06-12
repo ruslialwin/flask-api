@@ -5,17 +5,49 @@ import json
 
 app = Flask(__name__)
 
-API_URL_realisasi_bimp = "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-bimp"
-API_URL_analitik_bimp = "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-akun-analitik-bimp"
-API_URL_processing_labour_bimp = "https://dashboard.mahkotagroup.com/api/dashboard/processing-labour-bimp"
-API_URL_production_bimp = "https://dashboard.mahkotagroup.com/api/dashboard/production-bimp"
+COMPANIES = {
+    "bimp": {
+        "realisasi": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-bimp",
+        "analitik": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-akun-analitik-bimp",
+        "processing": "https://dashboard.mahkotagroup.com/api/dashboard/processing-labour-bimp",
+        "production": "https://dashboard.mahkotagroup.com/api/dashboard/production-bimp"
+    },
+    "bimr": {
+        "realisasi": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-bimr",
+        "analitik": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-akun-analitik-bimr",
+        "processing": "https://dashboard.mahkotagroup.com/api/dashboard/processing-labour-bimr",
+        "production": "https://dashboard.mahkotagroup.com/api/dashboard/production-bimr"
+    },
+    "bims": {
+        "realisasi": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-bims",
+        "analitik": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-akun-analitik-bims",
+        "processing": "https://dashboard.mahkotagroup.com/api/dashboard/processing-labour-bims",
+        "production": "https://dashboard.mahkotagroup.com/api/dashboard/production-bims"
+    },
+    "mul": {
+        "realisasi": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-mul",
+        "analitik": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-akun-analitik-mul",
+        "processing": "https://dashboard.mahkotagroup.com/api/dashboard/processing-labour-mul",
+        "production": "https://dashboard.mahkotagroup.com/api/dashboard/production-mul"
+    },
+    "kpnj": {
+        "realisasi": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-kpnj",
+        "analitik": "https://dashboard.mahkotagroup.com/api/dashboard/realisasi-akun-analitik-kpnj",
+        "processing": "https://dashboard.mahkotagroup.com/api/dashboard/processing-labour-kpnj",
+        "production": "https://dashboard.mahkotagroup.com/api/dashboard/production-kpnj"
+    }
+}
 
-@app.route("/realisasi-bimp")
-def get_data_realisasi():
-    responses = requests.get(API_URL_realisasi_bimp)
-    result = responses.json()
+# Data Helper
+def get_dataframe(url):
+    response = requests.get(url)
+    result = response.json()
+    return pd.DataFrame(result["data"])
 
-    df = pd.DataFrame(result["data"])
+@app.route("/realisasi/<company>")
+def get_data_realisasi(company):
+
+    df = get_dataframe(COMPANIES[company]["realisasi"])
 
     # Balik tanda nominal untuk Pendapatan dan Pendapatan Lain-lain
     mask_pendapatan = df["Deskripsi"].isin(["Pendapatan", "Pendapatan Lain-lain"])
@@ -37,12 +69,9 @@ def get_data_realisasi():
         mimetype="application/json"
     )
 
-@app.route("/realisasi-akun-analitik-bimp")
-def get_data_akun_analitik():
-    responses = requests.get(API_URL_analitik_bimp)
-    result = responses.json()
-
-    df = pd.DataFrame(result["data"])
+@app.route("/realisasi-akun-analitik/<company>")
+def get_data_akun_analitik(company):
+    df = get_dataframe(COMPANIES[company]["analitik"])
 
     # Balik tanda nominal untuk Pendapatan dan Pendapatan Lain-lain
     mask_pendapatan = df["Deskripsi"].isin(["Pendapatan", "Pendapatan Lain-lain"])
@@ -66,12 +95,9 @@ def get_data_akun_analitik():
         mimetype="application/json"
     )
 
-@app.route("/processing-labour-bimp")
-def get_data_processing_labour():
-    responses = requests.get(API_URL_processing_labour_bimp)
-    result = responses.json()
-
-    df = pd.DataFrame(result["data"])
+@app.route("/processing-labour/<company>")
+def get_data_processing_labour(company):
+    df = get_dataframe(COMPANIES[company]["processing"])
 
     # Bulatkan nilai 2 angka di belakang koma
     df["Realisasi Biaya"] = df["Realisasi Biaya"].round(2)
@@ -92,12 +118,9 @@ def get_data_processing_labour():
         mimetype="application/json"
     )
 
-@app.route("/production-bimp")
-def get_data_production():
-    responses = requests.get(API_URL_production_bimp)
-    result = responses.json()
-
-    df = pd.DataFrame(result["data"])
+@app.route("/production/<company>")
+def get_data_production(company):
+    df = get_dataframe(COMPANIES[company]["production"])
 
     # format tanggal
     df["Tanggal"] = pd.to_datetime(df["Tanggal"])
